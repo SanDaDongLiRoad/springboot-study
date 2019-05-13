@@ -1,0 +1,10 @@
+#MySQL连接信息
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/springboot-study
+    #用户名
+    username: root
+    #密码
+    password: root
+    #驱动
+    driver-class-name: com.mysql.cj.jdbc.Driver
