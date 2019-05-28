@@ -1,0 +1,41 @@
+<!--<beans xmlns="http://www.springframework.org/schema/beans"-->
+       <!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"-->
+       <!--xsi:schemaLocation="http://www.springframework.org/schema/beans-->
+    <!--http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">-->
+
+    <!--&lt;!&ndash;  定义Job对象 &ndash;&gt;-->
+    <!--<bean id="taskJob" class="com.lizhi.demo.quartz.TestTask"/>-->
+    <!--&lt;!&ndash;  定义JobDetail对象 &ndash;&gt;-->
+    <!--<bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">-->
+        <!--&lt;!&ndash;  目标对象taskJob &ndash;&gt;-->
+        <!--<property name="targetObject">-->
+            <!--<ref bean="taskJob"/>-->
+        <!--</property>-->
+        <!--&lt;!&ndash;  目标方法 &ndash;&gt;-->
+        <!--<property name="targetMethod">-->
+            <!--<value>run</value>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!--&lt;!&ndash;  调度触发器 &ndash;&gt;-->
+    <!--<bean id="myTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">-->
+        <!--&lt;!&ndash;  指定使用jobDetail &ndash;&gt;-->
+        <!--<property name="jobDetail">-->
+            <!--<ref bean="jobDetail" />-->
+        <!--</property>-->
+        <!--&lt;!&ndash;  定义触发规则，每10秒执行一次 &ndash;&gt;-->
+        <!--<property name="cronExpression">-->
+            <!--<value>0/10 * * * * ?</value>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!--&lt;!&ndash; 调度工厂 &ndash;&gt;-->
+    <!--<bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">-->
+        <!--&lt;!&ndash; 注册触发器，可注册多个 &ndash;&gt;-->
+        <!--<property name="triggers">-->
+            <!--<list>-->
+                <!--<ref bean="myTrigger"/>-->
+            <!--</list>-->
+        <!--</property>-->
+    <!--</bean>-->
+<!--</beans>-->

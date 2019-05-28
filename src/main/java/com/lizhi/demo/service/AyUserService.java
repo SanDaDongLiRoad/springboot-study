@@ -68,4 +68,12 @@ public interface AyUserService {
      * @return
      */
     List<AyUser> findByIdIn(Collection<String> ids);
+
+    /**
+     * 根据名字和密码查询用户
+     * @param name
+     * @param password
+     * @return
+     */
+    AyUser findByNameAndPassword(String name, String password);
 }
