@@ -1,8 +1,17 @@
 package com.lizhi.demo;
 
+import com.lizhi.demo.domain.AyMood;
 import com.lizhi.demo.domain.AyUser;
+import com.lizhi.demo.domain.Student;
+import com.lizhi.demo.domain.StudentCourse;
+import com.lizhi.demo.mq.AyMoodProducer;
+import com.lizhi.demo.repository.StudentCourseRepository;
+import com.lizhi.demo.repository.StudentRepository;
+import com.lizhi.demo.service.AyMoodService;
 import com.lizhi.demo.service.AyUserService;
+import com.lizhi.demo.util.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQQueue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +26,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
+import javax.jms.Destination;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Future;
 
 @Slf4j
 @SpringBootTest
@@ -39,6 +52,18 @@ public class SpringbootStudyApplicationTests {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private AyMoodService ayMoodService;
+
+    @Autowired
+    private AyMoodProducer ayMoodProducer;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private StudentCourseRepository studentCourseRepository;
 
     @Test
     public void contextLoads() {
@@ -156,5 +181,120 @@ public class SpringbootStudyApplicationTests {
     public void testMybatis(){
         AyUser ayUser = ayUserService.findByNameAndPassword("阿毅", "123456");
         log.info(ayUser.getId() + ayUser.getName());
+    }
+
+    @Test
+    public void testAyMood(){
+        AyMood ayMood = new AyMood();
+        ayMood.setId("1");
+        //用户阿毅id为1
+        ayMood.setUserId("1");
+        ayMood.setPraiseNum(0);
+        //说说内容
+        ayMood.setContent("这是我的第一条微信说说！！！");
+        ayMood.setPublishTime(new Date());
+        //往数据库保存一条数据，代码用户阿毅发表了一条说说
+        AyMood mood = ayMoodService.save(ayMood);
+    }
+
+    @Test
+    public void testActiveMQ() {
+
+//        Destination destination = new ActiveMQQueue();
+        ayMoodProducer.sendMessage("ay.queue", "hello,mq!!!");
+    }
+
+    @Test
+    public void testActiveMQAsynSave() {
+        AyMood ayMood = new AyMood();
+        ayMood.setId("3");
+        ayMood.setUserId("3");
+        ayMood.setPraiseNum(0);
+        ayMood.setContent("这是我的第一条微信说说！！！");
+        ayMood.setPublishTime(new Date());
+        String msg = ayMoodService.asynSave(ayMood);
+        System.out.println("异步发表说说 :" + msg);
+
+    }
+
+    @Test
+    public void testAsync(){
+        long startTime = System.currentTimeMillis();
+        System.out.println("第一次查询所有用户！");
+        List<AyUser> ayUserList = ayUserService.findAll();
+        System.out.println("第二次查询所有用户！");
+        List<AyUser> ayUserList2 = ayUserService.findAll();
+        System.out.println("第三次查询所有用户！");
+        List<AyUser> ayUserList3 = ayUserService.findAll();
+        long endTime = System.currentTimeMillis();
+        System.out.println("总共消耗：" + (endTime - startTime) + "毫秒");
+    }
+
+    @Test
+    public void testAsync2()throws Exception{
+        long startTime = System.currentTimeMillis();
+        System.out.println("第一次查询所有用户！");
+        Future<List<AyUser>> ayUserList = ayUserService.findAsynAll();
+        System.out.println("第二次查询所有用户！");
+        Future<List<AyUser>> ayUserList2 = ayUserService.findAsynAll();
+        System.out.println("第三次查询所有用户！");
+        Future<List<AyUser>> ayUserList3 = ayUserService.findAsynAll();
+        while (true){
+            if(ayUserList.isDone() && ayUserList2.isDone() && ayUserList3.isDone()){
+                break;
+            }else {
+                Thread.sleep(10);
+            }
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("总共消耗：" + (endTime - startTime) + "毫秒");
+    }
+
+    @Test
+    public void testInsertStudent(){
+
+        for(int i=0;i<70000;i++){
+            Student student = new Student();
+            student.setId(i);
+            student.setName("学生0"+i);
+            studentRepository.save(student);
+            System.out.println("已保存"+i+"条");
+        }
+    }
+
+    @Test
+    public void testInsertStudentCourse(){
+        Random random = new Random();
+        for(int i=1;i<=50;i++){
+            for(int j=1;j<10000;j++){
+                int score  = 50 + random.nextInt(50);
+                StudentCourse studentCourse = new StudentCourse();
+                studentCourse.setId(i*j);
+                studentCourse.setStudentId(i);
+                studentCourse.setCourseId(j);
+                studentCourse.setScore(score);
+                studentCourseRepository.save(studentCourse);
+                System.out.println("已保存i="+i+"条");
+                System.out.println("已保存j="+j+"条");
+            }
+        }
+    }
+
+    @Test
+    public void testInsertStudentCourse02(){
+        Random random = new Random();
+        for(int i=51;i<=100;i++){
+            for(int j=57000;j<57090;j++){
+                int score  = random.nextInt(101);
+                StudentCourse studentCourse = new StudentCourse();
+                studentCourse.setId(i*j);
+                studentCourse.setStudentId(i);
+                studentCourse.setCourseId(j);
+                studentCourse.setScore(score);
+                studentCourseRepository.save(studentCourse);
+                System.out.println("已保存i="+i+"条");
+                System.out.println("已保存j="+j+"条");
+            }
+        }
     }
 }

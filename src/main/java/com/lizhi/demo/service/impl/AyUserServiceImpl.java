@@ -9,11 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * 用户服务层实现类
@@ -60,7 +64,17 @@ public class AyUserServiceImpl implements AyUserService {
 
     @Override
     public List<AyUser> findAll() {
-        return ayUserRepository.findAll();
+        try{
+            System.out.println("开始做任务");
+            long start = System.currentTimeMillis();
+            List<AyUser> ayUserList = ayUserRepository.findAll();
+            long end = System.currentTimeMillis();
+            System.out.println("完成任务，耗时：" + (end - start) + "毫秒");
+            return ayUserList;
+        }catch (Exception e){
+            log.error("method [findAll] error",e);
+            return Collections.EMPTY_LIST;
+        }
     }
 
     @Transactional
@@ -102,5 +116,21 @@ public class AyUserServiceImpl implements AyUserService {
     @Override
     public AyUser findByNameAndPassword(String name, String password) {
         return ayUserDao.findByNameAndPassword(name, password);
+    }
+
+    @Async
+    @Override
+    public Future<List<AyUser>> findAsynAll() {
+        try{
+            System.out.println("开始做任务");
+            long start = System.currentTimeMillis();
+            List<AyUser> ayUserList = ayUserRepository.findAll();
+            long end = System.currentTimeMillis();
+            System.out.println("完成任务，耗时：" + (end - start) + "毫秒");
+            return new AsyncResult<List<AyUser>>(ayUserList) ;
+        }catch (Exception e){
+            log.error("method [findAll] error",e);
+            return new AsyncResult<List<AyUser>>(null);
+        }
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * 用户服务层接口
@@ -76,4 +77,10 @@ public interface AyUserService {
      * @return
      */
     AyUser findByNameAndPassword(String name, String password);
+
+    /**
+     * 异步查询
+     * @return
+     */
+    Future<List<AyUser>> findAsynAll();
 }
